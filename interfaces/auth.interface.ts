@@ -10,3 +10,23 @@ export interface AuthData {
   email: string;
   role: string;
 }
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: 'buyer' | 'seller';
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}

@@ -117,7 +117,7 @@ const LoginScreen = () => {
 
             <View className="flex-row justify-center mt-10">
               <Text className="text-gray-600">¿No tienes una cuenta? </Text>
-              <Pressable>
+              <Pressable onPress={() => router.replace('/auth/register')}>
                 <Text className="text-primary font-bold">Regístrate</Text>
               </Pressable>
             </View>

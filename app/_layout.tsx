@@ -26,6 +26,8 @@ const RootLayout = () => {
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="auth/login/index" />
+        <Stack.Screen name="auth/register/index" />
+        <Stack.Screen name="profile/index" />
       </Stack>
     </QueryClientProvider>
   );
