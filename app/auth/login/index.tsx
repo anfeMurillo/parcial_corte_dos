@@ -28,7 +28,13 @@ const LoginScreen = () => {
       const resp = await loginAction(email, password);
       
       showMessage(`¡Bienvenido! ${resp.data.email}`, 'success');
-      // router.replace('/home'); 
+      if (resp.data.role === 'buyer') {
+        router.replace('/products/index');
+      } else if (resp.data.role === 'seller') {
+        router.replace('/products/create/index');
+      } else {
+        showMessage('Rol no soportado para navegación', 'error');
+      }
     } catch (error: any) {
       showMessage(typeof error === 'string' ? error : 'Error de autenticación', 'error');
     } finally {
