@@ -1,8 +1,10 @@
 import { ecommerceApi } from "@/api/ecommerceApi";
 import { AuthResponse } from "@/interfaces/auth.interface";
+import { encryptPassword } from "@/utils/crypto";
 
-export const loginAction = async (email: string, encryptedPassword: string) => {
+export const loginAction = async (email: string, password: string) => {
   try {
+    const encryptedPassword = encryptPassword(password);
     const { data } = await ecommerceApi.post<AuthResponse>("/api/auth/login", {
       email,
       encryptedPassword,

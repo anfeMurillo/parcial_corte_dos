@@ -12,7 +12,9 @@ const RootLayout = () => {
     
   useEffect(() => {
     if (Platform.OS === 'android') {
-      NavigationBar.setBackgroundColorAsync('white');
+      NavigationBar.setBackgroundColorAsync('white').catch(() => {
+        // Silently ignore - not supported with edge-to-edge enabled
+      });
     }
   }, []);
 

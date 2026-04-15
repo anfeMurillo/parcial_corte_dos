@@ -2,6 +2,7 @@
   "expo": {
     "name": "ecommerce-app",
     "slug": "ecommerce-app",
+    "scheme": "ecommerce-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

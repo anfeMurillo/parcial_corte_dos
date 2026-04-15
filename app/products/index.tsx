@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import { getProducts } from '@/actions/products/getProducts.action';
 import { Product } from '@/interfaces/product.interface';
@@ -62,8 +63,18 @@ const ProductsScreen = () => {
 
   return (
     <View className="flex-1 bg-white px-6 pt-12">
-      <Text className="text-3xl font-bold text-primary">Productos</Text>
-      <Text className="text-gray-500 mt-1 mb-6">Catálogo disponible</Text>
+      <View className="flex-row items-center justify-between mb-6">
+        <View>
+          <Text className="text-3xl font-bold text-primary">Productos</Text>
+          <Text className="text-gray-500 mt-1">Catálogo disponible</Text>
+        </View>
+        <Pressable
+          className="w-12 h-12 bg-primary/10 rounded-full items-center justify-center"
+          onPress={() => router.push('/profile')}
+        >
+          <Ionicons name="person-outline" size={24} color="#49129C" />
+        </Pressable>
+      </View>
 
       <FlatList
         data={products}

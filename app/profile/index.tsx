@@ -1,53 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, Pressable, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { updateProfileAction } from '@/actions/auth/updateProfile.action';
+import { getPersonalInfoAction, updatePersonalInfoAction } from '@/actions/auth/profile.action';
+import { getUser, clearAuthData } from '@/utils/authStorage';
 import { Ionicons } from '@expo/vector-icons';
 
 const ProfileScreen = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' | null }>({ text: '', type: null });
-
-  // Mock user data - in real app, get from context or API
-  useEffect(() => {
-    // Simulate loading user data
-    setName('Usuario Ejemplo');
-    setEmail('usuario@example.com');
-  }, []);
 
   const showMessage = (text: string, type: 'success' | 'error') => {
     setMessage({ text, type });
     setTimeout(() => setMessage({ text: '', type: null }), 4000);
   };
 
-  const onUpdateProfile = async () => {
-    if (name.length === 0 || email.length === 0) {
-      showMessage('Por favor complete nombre y email', 'error');
-      return;
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    setIsFetching(true);
+    try {
+      const user = await getUser();
+      if (user) {
+        setEmail(user.email);
+        setRole(user.role);
+      }
+
+      const resp = await getPersonalInfoAction();
+      if (resp.data) {
+        setFirstName(resp.data.firstName || '');
+        setLastName(resp.data.lastName || '');
+        setPhoneNumber(resp.data.phoneNumber || '');
+        setDateOfBirth(resp.data.dateOfBirth || '');
+      }
+    } catch (error: any) {
+      showMessage(typeof error === 'string' ? error : 'Error al cargar perfil', 'error');
+    } finally {
+      setIsFetching(false);
     }
-    if (password && password !== confirmPassword) {
-      showMessage('Las contraseñas no coinciden', 'error');
+  };
+
+  const onUpdateProfile = async () => {
+    if (firstName.length === 0 || lastName.length === 0) {
+      showMessage('Nombre y apellido son requeridos', 'error');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Mock userId and token - in real app, get from auth context
-      const userId = 1;
-      const token = 'mock-token';
-
-      const updateData: any = { name, email };
-      if (password) {
-        updateData.password = password;
-      }
-
-      await updateProfileAction(userId, updateData, token);
+      await updatePersonalInfoAction({
+        firstName,
+        lastName,
+        phoneNumber,
+        dateOfBirth,
+      });
       showMessage('Perfil actualizado exitosamente', 'success');
     } catch (error: any) {
       showMessage(typeof error === 'string' ? error : 'Error al actualizar perfil', 'error');
@@ -55,6 +69,20 @@ const ProfileScreen = () => {
       setIsLoading(false);
     }
   };
+
+  const onLogout = async () => {
+    await clearAuthData();
+    router.replace('/auth/login');
+  };
+
+  if (isFetching) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#49129C" />
+        <Text className="text-gray-500 mt-4">Cargando perfil...</Text>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -65,11 +93,14 @@ const ProfileScreen = () => {
         <View className="flex-1 px-8 pt-12">
 
           <View className="items-center mb-8">
-            <View className="w-20 h-20 bg-primary rounded-2xl items-center justify-center shadow-lg">
+            <View className="w-20 h-20 bg-primary rounded-2xl items-center justify-center">
               <Ionicons name="person-outline" size={45} color="white" />
             </View>
             <Text className="text-3xl font-bold mt-4 text-primary">Mi Perfil</Text>
-            <Text className="text-gray-500 text-lg">Actualiza tu información</Text>
+            <Text className="text-gray-500 text-lg">{email}</Text>
+            <View className="bg-primary/10 rounded-full px-4 py-1 mt-2">
+              <Text className="text-primary font-medium text-sm">{role}</Text>
+            </View>
           </View>
 
           {message.type && (
@@ -85,72 +116,61 @@ const ProfileScreen = () => {
             </View>
           )}
 
-          <View className="space-y-4">
-            <View>
-              <Text className="text-gray-700 mb-2 ml-1 font-medium">Nombre Completo</Text>
-              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-                <Ionicons name="person-outline" size={20} color="#666" />
-                <TextInput
-                  className="flex-1 ml-3 text-gray-800"
-                  placeholder="Tu nombre completo"
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
+          <View className="mb-4">
+            <Text className="text-gray-700 mb-2 ml-1 font-medium">Nombre</Text>
+            <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+              <Ionicons name="person-outline" size={20} color="#666" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800"
+                placeholder="Tu nombre"
+                value={firstName}
+                onChangeText={setFirstName}
+              />
             </View>
+          </View>
 
-            <View>
-              <Text className="text-gray-700 mb-2 ml-1 font-medium">Correo Electrónico</Text>
-              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-                <Ionicons name="mail-outline" size={20} color="#666" />
-                <TextInput
-                  className="flex-1 ml-3 text-gray-800"
-                  placeholder="ejemplo@correo.com"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  value={email}
-                  onChangeText={setEmail}
-                />
-              </View>
+          <View className="mb-4">
+            <Text className="text-gray-700 mb-2 ml-1 font-medium">Apellido</Text>
+            <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+              <Ionicons name="person-outline" size={20} color="#666" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800"
+                placeholder="Tu apellido"
+                value={lastName}
+                onChangeText={setLastName}
+              />
             </View>
+          </View>
 
-            <View>
-              <Text className="text-gray-700 mb-2 ml-1 font-medium">Nueva Contraseña (opcional)</Text>
-              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-                <Ionicons name="lock-closed-outline" size={20} color="#666" />
-                <TextInput
-                  className="flex-1 ml-3 text-gray-800"
-                  placeholder="********"
-                  secureTextEntry={!isPasswordVisible}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
-                  <Ionicons name={isPasswordVisible ? "eye-off-outline" : "eye-outline"} size={20} color="#666" />
-                </Pressable>
-              </View>
+          <View className="mb-4">
+            <Text className="text-gray-700 mb-2 ml-1 font-medium">Teléfono</Text>
+            <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+              <Ionicons name="call-outline" size={20} color="#666" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800"
+                placeholder="+57 300 123 4567"
+                keyboardType="phone-pad"
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+              />
             </View>
+          </View>
 
-            <View>
-              <Text className="text-gray-700 mb-2 ml-1 font-medium">Confirmar Nueva Contraseña</Text>
-              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-                <Ionicons name="lock-closed-outline" size={20} color="#666" />
-                <TextInput
-                  className="flex-1 ml-3 text-gray-800"
-                  placeholder="********"
-                  secureTextEntry={!isConfirmPasswordVisible}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                />
-                <Pressable onPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}>
-                  <Ionicons name={isConfirmPasswordVisible ? "eye-off-outline" : "eye-outline"} size={20} color="#666" />
-                </Pressable>
-              </View>
+          <View className="mb-4">
+            <Text className="text-gray-700 mb-2 ml-1 font-medium">Fecha de Nacimiento</Text>
+            <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+              <Ionicons name="calendar-outline" size={20} color="#666" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800"
+                placeholder="1990-05-15"
+                value={dateOfBirth}
+                onChangeText={setDateOfBirth}
+              />
             </View>
           </View>
 
           <Pressable
-            className="bg-primary py-4 rounded-xl mt-8 shadow-lg"
+            className="bg-primary py-4 rounded-xl mt-4"
             onPress={onUpdateProfile}
             disabled={isLoading}
           >
@@ -162,7 +182,14 @@ const ProfileScreen = () => {
           </Pressable>
 
           <Pressable
-            className="mt-6"
+            className="mt-4 py-4 rounded-xl border border-red-300 bg-red-50"
+            onPress={onLogout}
+          >
+            <Text className="text-red-600 text-center font-bold text-lg">Cerrar Sesión</Text>
+          </Pressable>
+
+          <Pressable
+            className="mt-4 mb-8"
             onPress={() => router.back()}
           >
             <Text className="text-primary text-center font-medium">Volver</Text>

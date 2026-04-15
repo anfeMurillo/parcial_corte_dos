@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { loginAction } from '@/actions/auth/login.action';
+import { saveAuthData } from '@/utils/authStorage';
 import { Ionicons } from '@expo/vector-icons';
 
 const LoginScreen = () => {
@@ -27,11 +28,22 @@ const LoginScreen = () => {
       // Nota: La API requiere contraseña cifrada AES-256-CBC.
       const resp = await loginAction(email, password);
       
+      // Save auth token and user data
+      await saveAuthData({
+        token: resp.data.token,
+        userId: resp.data.userId,
+        email: resp.data.email,
+        role: resp.data.role,
+      });
+
       showMessage(`¡Bienvenido! ${resp.data.email}`, 'success');
-      if (resp.data.role === 'buyer') {
-        router.replace('/products/index');
-      } else if (resp.data.role === 'seller') {
-        router.replace('/products/create/index');
+      const role = resp.data.role.toLowerCase();
+      if (role === 'buyer') {
+        router.replace('/products');
+      } else if (role === 'seller') {
+        router.replace('/products/create');
+      } else if (role === 'admin') {
+        router.replace('/products');
       } else {
         showMessage('Rol no soportado para navegación', 'error');
       }
@@ -74,7 +86,7 @@ const LoginScreen = () => {
           <View className="space-y-4">
             <View>
               <Text className="text-gray-700 mb-2 ml-1 font-medium">Correo Electrónico</Text>
-              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200 focus:border-primary">
+              <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
                 <Ionicons name="mail-outline" size={20} color="#666" />
                 <TextInput
                   className="flex-1 ml-3 text-gray-800"

@@ -12,7 +12,9 @@ export interface AuthData {
 }
 
 export interface RegisterRequest {
-  name: string;
+  firstName: string;
+  lastName: string;
+  identificationNumber: string;
   email: string;
   password: string;
   role: 'buyer' | 'seller';

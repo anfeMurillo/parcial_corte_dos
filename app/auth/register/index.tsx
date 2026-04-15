@@ -5,7 +5,9 @@ import { registerAction } from '@/actions/auth/register.action';
 import { Ionicons } from '@expo/vector-icons';
 
 const RegisterScreen = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [identificationNumber, setIdentificationNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,7 +23,7 @@ const RegisterScreen = () => {
   };
 
   const onRegister = async () => {
-    if (name.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0) {
+    if (firstName.length === 0 || lastName.length === 0 || identificationNumber.length === 0 || email.length === 0 || password.length === 0 || confirmPassword.length === 0) {
       showMessage('Por favor complete todos los campos', 'error');
       return;
     }
@@ -32,7 +34,7 @@ const RegisterScreen = () => {
 
     setIsLoading(true);
     try {
-      const resp = await registerAction({ name, email, password, role });
+      const resp = await registerAction({ firstName, lastName, identificationNumber, email, password, role });
       showMessage(`¡Registro exitoso! Bienvenido ${resp.data.email}`, 'success');
       // Redirect to login after success
       setTimeout(() => router.replace('/auth/login'), 2000);
@@ -73,15 +75,43 @@ const RegisterScreen = () => {
           )}
 
           <View className="space-y-4">
+            <View className="flex-row space-x-4">
+              <View className="flex-1">
+                <Text className="text-gray-700 mb-2 ml-1 font-medium">Nombre</Text>
+                <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+                  <Ionicons name="person-outline" size={20} color="#666" />
+                  <TextInput
+                    className="flex-1 ml-3 text-gray-800"
+                    placeholder="Nombre"
+                    value={firstName}
+                    onChangeText={setFirstName}
+                  />
+                </View>
+              </View>
+              <View className="flex-1">
+                <Text className="text-gray-700 mb-2 ml-1 font-medium">Apellido</Text>
+                <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
+                  <Ionicons name="person-outline" size={20} color="#666" />
+                  <TextInput
+                    className="flex-1 ml-3 text-gray-800"
+                    placeholder="Apellido"
+                    value={lastName}
+                    onChangeText={setLastName}
+                  />
+                </View>
+              </View>
+            </View>
+
             <View>
-              <Text className="text-gray-700 mb-2 ml-1 font-medium">Nombre Completo</Text>
+              <Text className="text-gray-700 mb-2 ml-1 font-medium">Identificación</Text>
               <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-                <Ionicons name="person-outline" size={20} color="#666" />
+                <Ionicons name="card-outline" size={20} color="#666" />
                 <TextInput
                   className="flex-1 ml-3 text-gray-800"
-                  placeholder="Tu nombre completo"
-                  value={name}
-                  onChangeText={setName}
+                  placeholder="Número de cédula"
+                  keyboardType="numeric"
+                  value={identificationNumber}
+                  onChangeText={setIdentificationNumber}
                 />
               </View>
             </View>
