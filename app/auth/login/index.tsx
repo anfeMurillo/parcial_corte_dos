@@ -38,12 +38,10 @@ const LoginScreen = () => {
 
       showMessage(`¡Bienvenido! ${resp.data.email}`, 'success');
       const role = resp.data.role.toLowerCase();
-      if (role === 'buyer') {
+      if (role === 'buyer' || role === 'admin') {
         router.replace('/products');
       } else if (role === 'seller') {
-        router.replace('/products/create');
-      } else if (role === 'admin') {
-        router.replace('/products');
+        router.replace('/products'); // Seller also goes to products (home)
       } else {
         showMessage('Rol no soportado para navegación', 'error');
       }
